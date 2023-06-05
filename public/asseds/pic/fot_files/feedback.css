@@ -1,0 +1,140 @@
+.pfd-feedback-button-wrap {
+    margin-left: 15px;
+}
+
+button.pfd-feedback-button {
+    background: transparent;
+    display: inline-block;
+    margin: 0;
+    width: auto;
+    min-width: 80px;
+    text-align: center;
+    padding: 8px 25px;
+    border: 1px solid #aeaeae;
+    line-height: 1;
+    font-size: 15px;
+    color: #818181;
+    border-radius: 4px;
+    vertical-align: middle;
+    cursor: pointer;
+    margin-right: 10px;
+    box-sizing: border-box;
+    transition: all .15s ease-in-out;
+}
+
+.feedback-submission-msg {
+    background: rgb(219 235 224 / 58%);
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+
+.feedback-submission-msg {
+    color: #428423;
+    font-weight: 600;
+}
+
+.feedback-submission-msg-fail {
+    color: #c02323;
+    font-weight: 600;
+}
+
+.pfd-feedback-form {
+    display: none;
+}
+
+.pfd-feedback-form.show {
+    display: block;
+}
+
+.pfd-feedback-textarea {
+    border-radius: 2px;
+    border: 2px solid #f2f4f7;
+    padding: 12px;
+    display: block;
+    width: 620px;
+    max-width: 100%;
+    margin-bottom: 5px;
+    height: 150px;
+    font-size: 16px;
+    color: #41495b;
+    margin-top: 1em;
+}
+
+.pfd-feedback-form-button {
+    font-size: 16px;
+    padding: 10px 50px;
+    background-color: #9A36E1;
+    -webkit-transition: all .1s ease-in-out;
+    transition: all .1s ease-in-out;
+    color: #fff;
+    font-weight: 700;
+    line-height: 26px;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 2px;
+    border-bottom: 0;
+    margin: 6px 0px;
+}
+
+.pfd-feedback-main {
+    display: none;
+}
+
+button.pfd-feedback-button.selected.yes-selected {
+    border: 1px solid #428423;
+    box-shadow: 0px 8px 10px rgba(0, 0, 0, 0.1);
+}
+
+.pfd-feedback-button.selected.yes-selected .pfd-feedback-button-yes {
+    color: #428423;
+}
+
+button.pfd-feedback-button.selected.no-selected {
+    border: 1px solid #b34f28;
+    box-shadow: 0px 8px 10px rgba(0, 0, 0, 0.1);
+
+}
+
+.pfd-feedback-button.selected.no-selected .pfd-feedback-button-no {
+    color: #b34f28;
+}
+
+.pfd-wrap {
+    border: 2px solid #E5E9EC;
+    padding: 20px;
+}
+
+label.pfd-feedback-button-yes, label.pfd-feedback-button-no {
+    cursor: pointer;
+}
+
+button.pfd-feedback-button:hover {
+    border-color: #848484;
+    color: #848484;
+}
+
+.pfd-feedback-text, .pfd-feedback-button-wrap {
+    display: inline-block;
+}
+.pfd-feedback-main.show {
+    display: block;
+    text-align: center;
+}
+.pfd-feedback-text {
+    font-size: 17px;
+    font-weight: 600;
+}
+.pfd-feedback-textarea {
+    width: 100%; 
+}
+@media (max-width: 767px) {
+.pfd-feedback-button-wrap {
+    display: block;
+    margin-top: 10px;
+    margin-left: 0px;
+}
+.pfd-feedback-main.show {
+    display: block;
+    text-align: center;
+}
+}

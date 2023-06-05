@@ -1,0 +1,245 @@
+(function( $ ) {
+
+	jQuery('document').ready( function( $ ) {
+
+        var finalTemplate = $( '#pfd-search-result-template' ),
+			outputTemplate   = _.template( finalTemplate.html() ),
+            wrapper          = '#search-wrapper',
+			resultList		 = '#result-list',
+			results          = '#search-results',
+			searchLoader     = '#search-loading',
+			searchInput  	 = '#search-input',
+			notice           = '.pf-docs-helper',
+            //noticeText       = pf_docs_search.least_char,
+			endPointError	 = pf_docs_search.end_point_error,
+			errorDiv 		 = ".pf-docs-error-results-wrap",
+			remote_url 	= $(searchInput).data('remote-url'),
+            typingTimer,
+            doneTypingInterval = 4000;
+            request_status = '';
+
+        init();
+
+        function init() {
+
+            // When Enter is pressed then Process the Results.
+            $( searchInput ).on( 'keyup', function ( event ) {
+                if ( event.keyCode === 13 ) {
+                	
+                    processSearchResults(false);
+                }
+            });
+
+            // When Search Icon is clicked then Process the Results.
+            $( '.pf-docs-search-container .dashicons-search' ).on('click', function ( event ) {
+            	
+                processSearchResults(false);
+            });
+            
+            // When Search Input Debouncing then Process the Results.
+
+            // 1 - on keyup, start the countdown.
+            $( searchInput ).on( 'keyup', function ( event ) {
+
+				if ( event.keyCode !== 13 ) {
+					
+					clearTimeout( typingTimer );
+
+					processSearchResults( false, event );
+
+					typingTimer = setTimeout( function() {
+						doneTyping(event)
+					}, doneTypingInterval );
+				}
+            });
+
+            // 2 - on keydown, clear the countdown .
+            $( searchInput ).on('keydown', function () {
+
+                clearTimeout(typingTimer);
+            });
+
+            // 3 - user is "finished typing," do something
+            function doneTyping ( event ) {
+            	val 		= $.trim( $(searchInput).val() )
+            	if(request_status != '' && val.length >=3) {
+            		searchResultUpdateInDb( val, request_status )
+            	}
+            	
+                // processSearchResults( true, event );
+            }
+
+        }
+        function processSearchResults( updateDatabase = true, event = '' ) {
+
+        	let subtype = 'subtype[]=docs';
+        	let source = [];
+        	if(typeof pfd_option.pfd_post_type != 'undefined') {
+        		let post_types = [];
+        		source = pfd_option.pfd_post_type.split(',');
+        		source.forEach((type) => {
+        			post_types.push('subtype[]=' + type.trim());
+        		})
+        		subtype = post_types.join('&');
+        	}
+        	
+			var key         = event.which,
+				that        = $(searchInput),
+				val 		= $.trim( $(searchInput).val() ),
+				valIs       = val == $(that).val(),
+				notEmpty    = '' !== val,
+				type        = $(searchInput).data('object-type'),
+				max         = $( wrapper ).data('number'),
+				url 		= remote_url+'/wp-json/wp/v2/search?'+subtype+'&search='+val+'&per_page='+max+'&orderby=relevance&order=asc';
+				
+
+			if ( ! valIs && ! notEmpty ) {
+                return false;
+            }
+            $(results).parent().addClass('pf-docs-hide').removeClass('pf-docs-show');
+            
+			// destroy the search if value is empty.
+			if ( val == '' ) {				
+				destroySearch(1);				
+			}		
+			// when type only two characters?
+
+			else if ( val.length == 2 ) {
+				//console.log('here');
+				destroySearch();
+				$( '.search-results-text,.no-search-results-text' ).removeClass('pf-docs-show').addClass('pf-docs-hide');
+				$( results ).parent().addClass('pf-docs-show').removeClass('pf-docs-hide');
+				$( '.pf-docs-helper' ).removeClass('pf-docs-hide')
+								.addClass('pf-docs-show');
+
+			}
+
+			// when type >= 3 characters.
+			if ( val.length >= 3 ) {
+				$( '.pf-docs-helper,.pf-docs-search-button' ).addClass('pf-docs-hide')
+								.removeClass('pf-docs-show');
+
+				// loading effect.
+				$( searchLoader ).removeClass('pf-docs-hide')
+								.addClass('pf-docs-show');
+								
+				// request.
+				var jqxhr = $.getJSON( url, function( response ) {
+					
+					// remove current lists.
+					$(resultList).children().remove();
+					$(resultList).removeClass('rs-full').addClass('rs-empty');
+
+					// loading effect hide.
+					$(searchLoader).removeClass('pf-docs-show').addClass('pf-docs-hide');
+					$('.pf-docs-search-button').addClass('pf-docs-show').removeClass('pf-docs-hide');
+					// count results & show.
+					if ( response.length == 0 ) {
+
+						// no result found.
+						$(results).closest( wrapper ).addClass('pf-docs-no-results');
+						$(results).find('.no-search-results-text').removeClass('pf-docs-hide');
+						$(results).find('.search-results-text').addClass('pf-docs-hide');
+						request_status = 'fail';
+
+
+					} else {
+
+						// max no. of results found.
+						$(results).closest( wrapper ).removeClass('pf-docs-no-results');
+
+						
+						$(results).find('.search-results-text').removeClass('pf-docs-hide');
+						$(results).find('.no-search-results-text').addClass('pf-docs-hide');
+						// each object in loop.
+						grouped_results =  group_posts(response, 'subtype');
+						
+						source.forEach((type) => { 
+							heading = type;
+							if(type == 'post') {
+								heading = 'Blog Posts';
+							}
+							if(typeof grouped_results[type] !== 'undefined' && grouped_results[type].length > 0) {
+								$(resultList).append( "<li class='list-heading'>"+heading+"</li>" );
+								 
+								$.each( grouped_results[type] , function ( i, result ) {
+									$(resultList).append( outputTemplate( { post: result } ) )
+								        .removeClass('rs-empty')
+								        .addClass('rs-full');
+						    	});
+							}
+						})								    
+						
+					    request_status = 'pass';
+					}
+					$(results).parent().removeClass('pf-docs-hide').addClass('pf-docs-show');
+					
+					if ( true === updateDatabase ) {
+						searchResultUpdateInDb( val, request_status )
+                        
+					}
+				})
+								
+				// complete request trigger.
+				.done(function() {
+					$(document).trigger("after");
+				})
+								
+				//request error.
+				.fail(function() {
+					// loading effect hide.
+					$(errorDiv).text(endPointError);
+					$(searchLoader).removeClass('pf-docs-show').addClass('pf-docs-hide');
+				});
+			}
+
+			
+		}
+		const group_posts = (array, key) => {
+		  
+		  return array.reduce((result, currentValue) => {
+		    
+		    (result[currentValue[key]] = result[currentValue[key]] || []).push(
+		      currentValue
+		    );
+		   
+		    return result;
+		  }, {}); 
+		}
+
+
+		function destroySearch(clear_input = 0){
+			
+			$( resultList ).children().remove();
+			if(clear_input == 1) {
+				$( searchInput ).val('');
+			}
+		    $( results ).parent().removeClass('pf-docs-show').addClass('pf-docs-hide');
+			$( resultList ).removeClass('rs-full').addClass('rs-empty');
+			$( notice ).removeClass('pf-docs-show').addClass('pf-docs-hide');
+			$( errorDiv ).empty();
+			$('.pf-docs-after-wrapper').fadeOut(); //remove html tag "before" trigger.
+			// removeClose();
+		}
+        function searchResultUpdateInDb( search_term, request_status ) {
+            
+            // Trigger ajax request.
+            $.ajax({
+                url  : pf_docs_search.ajaxurl,
+                type : 'POST',
+                dataType: 'json',
+                data : {
+                    'action'  : 'pf_docs_search_result',
+                    'search_term'  :  search_term,
+                    'request_status'  :  request_status,
+                    'nonce' : pf_docs_search.pfd_ajax_nonce
+                },
+            })
+            .fail(function( jqXHR ){
+            })
+            .done(function ( results ) {			         
+            });	
+        }
+    });
+
+})( jQuery );
