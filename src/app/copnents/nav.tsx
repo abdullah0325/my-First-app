@@ -4,7 +4,7 @@ import Image from 'next/image';
 import react from 'react'
 const Nav = ()=>  {
     return(
-        <div className='bg-yellow-200 z-50 sticky top-0'>
+        <div className='bg-pink-400 z-50 sticky top-0'>
             <header className="text-gray-600 body-font">
   <div className="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
     <a className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
@@ -17,7 +17,7 @@ const Nav = ()=>  {
       <span className="p-4 ml-3 text-3xl ">Swabi F16 Nasware</span>
     </a>
     <nav className="md:ml-auto md:mr-auto flex flex-wrap items-center text-base justify-center">
-      <Link href={"/"} className="mr-5 hover:text-blue-600">Home</Link >
+      <Link href={"/"} className="mr-5  text-green-700 hover:text-red-600">Home</Link >
       <Link href={'#about'} className="mr-5 hover:text-blue-600">About</Link> 
       <Link href={'#skills'} className="mr-5 hover:text-blue-600">Skills</Link >
       <Link  href={"#projects"} className="mr-5 hover:text-blue-600">Projects</Link >
